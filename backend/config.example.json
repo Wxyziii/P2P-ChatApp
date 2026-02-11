@@ -1,0 +1,18 @@
+{
+    "node": {
+        "username": "your_username",
+        "listen_port": 9100,
+        "api_port": 8080
+    },
+    "supabase": {
+        "url": "https://YOUR_PROJECT.supabase.co",
+        "anon_key": "YOUR_ANON_KEY"
+    },
+    "database": {
+        "local_db_path": "local_chat.db"
+    },
+    "logging": {
+        "level": "info",
+        "file": "node.log"
+    }
+}

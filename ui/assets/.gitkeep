@@ -1,0 +1,7 @@
+/* assets/ — Place icons, fonts, and Qt stylesheets here.
+ *
+ * Suggested files:
+ *   icon.png          — application icon (256×256)
+ *   style.qss         — Qt stylesheet for theming
+ *   send_icon.svg     — send button icon
+ */
