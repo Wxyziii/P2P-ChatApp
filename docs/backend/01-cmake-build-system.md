@@ -280,7 +280,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE my_library_name::my_library_name)
 
 For libraries that must be pre-installed (libsodium, libcurl, SQLite3):
 
-### On Linux (apt):
+### On Linux (Arch Linux — pacman):
+```bash
+sudo pacman -S libsodium curl sqlite
+```
+
+### On Linux (Ubuntu/Debian — apt):
 ```bash
 sudo apt install libsodium-dev libcurl4-openssl-dev libsqlite3-dev
 ```

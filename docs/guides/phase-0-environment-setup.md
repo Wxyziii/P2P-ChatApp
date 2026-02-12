@@ -65,7 +65,7 @@ Our P2P chat app has three layers:
 | Tool | Version | Purpose | Download |
 |------|---------|---------|----------|
 | **Visual Studio** (Windows) | 2022+ | C++ compiler (MSVC) | [visualstudio.microsoft.com](https://visualstudio.microsoft.com/) |
-| **GCC/Clang** (Linux) | 12+ | C++ compiler | `sudo apt install build-essential` |
+| **GCC/Clang** (Linux) | 12+ | C++ compiler | Arch: `sudo pacman -S base-devel` / Debian: `sudo apt install build-essential` |
 | **CMake** | 3.20+ | C++ build system | [cmake.org/download](https://cmake.org/download/) |
 | **vcpkg** or manual install | Latest | C++ package manager | [github.com/microsoft/vcpkg](https://github.com/microsoft/vcpkg) |
 | **Node.js** | 20 LTS+ | Frontend tooling (npm, vite) | [nodejs.org](https://nodejs.org/) |
@@ -125,17 +125,29 @@ $env:VCPKG_ROOT = "C:\dev\vcpkg"
 
 ## 4. Installing C++ Toolchain (Linux)
 
+### Arch Linux
+
 ```bash
-# Ubuntu/Debian
+sudo pacman -S base-devel cmake git pkgconf
+```
+
+**Why `base-devel`?** It's a package group that installs `gcc`, `g++`, `make`, `binutils`, and other essentials — the Arch equivalent of Debian's `build-essential`.
+
+### Ubuntu / Debian
+
+```bash
 sudo apt update
 sudo apt install -y build-essential cmake git pkg-config
-
-# Verify
-g++ --version    # Should show 12+
-cmake --version  # Should show 3.20+
 ```
 
 **Why `build-essential`?** It's a meta-package that installs `gcc`, `g++`, `make`, and other essentials.
+
+### Verify (Both Distros)
+
+```bash
+g++ --version    # Should show 12+
+cmake --version  # Should show 3.20+
+```
 
 ---
 
@@ -161,7 +173,10 @@ These require NO manual installation — CMake downloads them during build:
 # Windows (vcpkg)
 vcpkg install libsodium:x64-windows
 
-# Linux
+# Arch Linux
+sudo pacman -S libsodium
+
+# Ubuntu / Debian
 sudo apt install libsodium-dev
 ```
 
@@ -176,7 +191,10 @@ sudo apt install libsodium-dev
 # Windows (vcpkg)
 vcpkg install curl:x64-windows
 
-# Linux
+# Arch Linux
+sudo pacman -S curl
+
+# Ubuntu / Debian
 sudo apt install libcurl4-openssl-dev
 ```
 
@@ -191,7 +209,10 @@ sudo apt install libcurl4-openssl-dev
 # Windows (vcpkg)
 vcpkg install sqlite3:x64-windows
 
-# Linux
+# Arch Linux
+sudo pacman -S sqlite
+
+# Ubuntu / Debian
 sudo apt install libsqlite3-dev
 ```
 
@@ -229,7 +250,10 @@ cmake --build .
 # Windows — download LTS from nodejs.org, or:
 winget install OpenJS.NodeJS.LTS
 
-# Linux
+# Arch Linux
+sudo pacman -S nodejs npm
+
+# Ubuntu / Debian
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
@@ -256,6 +280,14 @@ cargo --version
 > 📖 **Tauri Prerequisites**: [v2.tauri.app/start/prerequisites](https://v2.tauri.app/start/prerequisites/)
 
 ### Linux Additional Dependencies (for Tauri)
+
+#### Arch Linux
+
+```bash
+sudo pacman -S webkit2gtk-4.1 gtk3 libayatana-appindicator librsvg
+```
+
+#### Ubuntu / Debian
 
 ```bash
 sudo apt install -y libwebkit2gtk-4.1-dev libgtk-3-dev \

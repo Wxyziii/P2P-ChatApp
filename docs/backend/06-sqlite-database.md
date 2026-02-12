@@ -49,7 +49,12 @@ SQLite is a lightweight database that stores everything in a single file. No ser
 vcpkg install sqlite3:x64-windows
 ```
 
-**Linux**:
+**Linux (Arch Linux)**:
+```bash
+sudo pacman -S sqlite
+```
+
+**Linux (Ubuntu/Debian)**:
 ```bash
 sudo apt install libsqlite3-dev
 ```

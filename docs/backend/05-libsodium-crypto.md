@@ -43,6 +43,11 @@ Think of it like a locksmith's toolkit — it gives you locks (encryption), keys
 vcpkg install libsodium:x64-windows
 ```
 
+**Linux (Arch Linux)**:
+```bash
+sudo pacman -S libsodium
+```
+
 **Linux (Ubuntu/Debian)**:
 ```bash
 sudo apt install libsodium-dev

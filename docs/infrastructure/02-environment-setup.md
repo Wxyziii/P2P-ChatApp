@@ -9,7 +9,7 @@
 
 1. [Overview](#1-overview)
 2. [Windows Setup](#2-windows-setup)
-3. [Linux (Ubuntu/Debian) Setup](#3-linux-ubuntudebian-setup)
+3. [Linux Setup (Arch / Ubuntu / Debian)](#3-linux-setup)
 4. [macOS Setup](#4-macos-setup)
 5. [IDE Setup](#5-ide-setup)
 6. [Git Setup](#6-git-setup)
@@ -95,25 +95,23 @@ pip install PySide6 requests
 
 ---
 
-## 3. Linux (Ubuntu/Debian) Setup
+## 3. Linux Setup
 
-### Step 1: Install Build Tools
+### Arch Linux
 
-```bash
-sudo apt update
-sudo apt install -y build-essential cmake git
-```
-
-### Step 2: Install C++ Libraries
+#### Step 1: Install Build Tools
 
 ```bash
-sudo apt install -y \
-    libsodium-dev \
-    libcurl4-openssl-dev \
-    libsqlite3-dev
+sudo pacman -S base-devel cmake git pkgconf
 ```
 
-### Step 3: Build the Backend
+#### Step 2: Install C++ Libraries
+
+```bash
+sudo pacman -S libsodium curl sqlite
+```
+
+#### Step 3: Build the Backend
 
 ```bash
 cd secure-p2p-chat/backend
@@ -122,13 +120,55 @@ cmake ..
 make -j$(nproc)
 ```
 
-### Step 4: Install Python
+#### Step 4: Install Python
+
+```bash
+sudo pacman -S python python-pip python-virtualenv
+```
+
+#### Step 5: Python Virtual Environment
+
+```bash
+cd secure-p2p-chat
+python -m venv venv
+source venv/bin/activate
+pip install PySide6 requests
+```
+
+### Ubuntu / Debian
+
+#### Step 1: Install Build Tools
+
+```bash
+sudo apt update
+sudo apt install -y build-essential cmake git
+```
+
+#### Step 2: Install C++ Libraries
+
+```bash
+sudo apt install -y \
+    libsodium-dev \
+    libcurl4-openssl-dev \
+    libsqlite3-dev
+```
+
+#### Step 3: Build the Backend
+
+```bash
+cd secure-p2p-chat/backend
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+#### Step 4: Install Python
 
 ```bash
 sudo apt install -y python3 python3-pip python3-venv
 ```
 
-### Step 5: Python Virtual Environment
+#### Step 5: Python Virtual Environment
 
 ```bash
 cd secure-p2p-chat
@@ -372,6 +412,10 @@ cmake -B build -S . -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.c
 
 **Fix (Linux)**: Install the dev package:
 ```bash
+# Arch Linux
+sudo pacman -S libsodium
+
+# Ubuntu / Debian
 sudo apt install libsodium-dev
 ```
 

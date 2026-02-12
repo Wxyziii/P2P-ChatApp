@@ -35,7 +35,7 @@ Before packaging, your app needs these finishing touches:
 | **App icon** | Professional appearance in taskbar/dock | Easy |
 | **Error handling** | Graceful failures, loading states, offline indicators | Medium |
 | **Keyboard shortcuts** | Power user experience | Easy |
-| **Packaging** | `.msi` for Windows, `.deb`/`.AppImage` for Linux | Easy (Tauri handles it) |
+| **Packaging** | `.msi` for Windows, `.AppImage` for Linux (or `.deb` / PKGBUILD for Arch) | Easy (Tauri handles it) |
 
 ---
 
@@ -709,6 +709,8 @@ export class ErrorBoundary extends Component<Props, State> {
 }
 ```
 
+> **Arch Linux**: The `deb.depends` section is only relevant for Debian-based distros. On Arch, install the equivalent packages with pacman: `sudo pacman -S openssl sqlite`. If you're only building AppImage or using a PKGBUILD, you can ignore the `deb` block entirely.
+
 ### CSP (Content Security Policy) — Important!
 
 The `csp` field controls what the webview can connect to. You **must** whitelist your backend:
@@ -758,13 +760,48 @@ cp ../backend/build/backend \
 npm run tauri build
 ```
 
-Output:
+Output (Ubuntu / Debian):
 ```
 src-tauri/target/release/bundle/
 ├── deb/
 │   └── secure-chat_1.0.0_amd64.deb
 └── appimage/
     └── secure-chat_1.0.0_amd64.AppImage
+```
+
+Output (Arch Linux):
+```
+src-tauri/target/release/bundle/
+└── appimage/
+    └── secure-chat_1.0.0_amd64.AppImage
+```
+
+> ⚠️ **Arch Linux Note**: Tauri does not generate `.deb` packages on Arch since `dpkg` is not installed. Use the **AppImage** output — it works on all Linux distros. Alternatively, create a custom `PKGBUILD` (see below).
+
+#### Optional: Arch Linux PKGBUILD
+
+If you want to install the app via `makepkg` on Arch, create a `PKGBUILD`:
+
+```bash
+# PKGBUILD
+pkgname=securechat
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Secure P2P Chat Application"
+arch=('x86_64')
+license=('MIT')
+depends=('webkit2gtk-4.1' 'gtk3' 'libayatana-appindicator' 'librsvg' 'libsodium' 'curl' 'sqlite')
+
+package() {
+    install -Dm755 "${srcdir}/SecureChat" "${pkgdir}/usr/bin/securechat"
+    install -Dm644 "${srcdir}/icon.png" "${pkgdir}/usr/share/icons/hicolor/128x128/apps/securechat.png"
+    install -Dm644 "${srcdir}/securechat.desktop" "${pkgdir}/usr/share/applications/securechat.desktop"
+}
+```
+
+```bash
+# Build and install on Arch
+makepkg -si
 ```
 
 ### Build Checklist
@@ -1028,7 +1065,7 @@ Use this checklist to verify your app is ready for release:
 - [ ] App icon displays correctly in taskbar
 - [ ] CSP allows API and WebSocket connections
 - [ ] Windows installer (`.msi` or `.exe`) builds successfully
-- [ ] Linux package (`.deb` or `.AppImage`) builds successfully
+- [ ] Linux package (`.AppImage`, `.deb`, or Arch PKGBUILD) builds successfully
 - [ ] Production build runs without errors
 
 ---

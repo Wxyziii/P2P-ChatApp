@@ -280,11 +280,11 @@ Before setting up the project, you need these installed:
 
 | Tool | Minimum Version | How to Install | How to Check |
 |---|---|---|---|
-| C++ Compiler | GCC 12+, Clang 15+, or MSVC 19.30+ (Visual Studio 2022) | **Windows:** Install [Visual Studio 2022](https://visualstudio.microsoft.com/) Community (free) with "Desktop development with C++" workload. **Linux:** `sudo apt install build-essential` **macOS:** `xcode-select --install` | `g++ --version` or `cl` in VS Developer Command Prompt |
-| CMake | 3.20+ | **Windows:** `winget install Kitware.CMake` **Linux:** `sudo apt install cmake` **macOS:** `brew install cmake` | `cmake --version` |
-| libsodium | Latest | **Windows:** `vcpkg install libsodium` or download from [download.libsodium.org](https://download.libsodium.org/libsodium/releases/) **Linux:** `sudo apt install libsodium-dev` **macOS:** `brew install libsodium` | `pkg-config --modversion libsodium` (Linux/macOS) |
-| libcurl | Latest | **Windows:** Usually bundled with Visual Studio; or `vcpkg install curl` **Linux:** `sudo apt install libcurl4-openssl-dev` **macOS:** Pre-installed | `curl --version` |
-| SQLite3 | Latest | **Windows:** `vcpkg install sqlite3` **Linux:** `sudo apt install libsqlite3-dev` **macOS:** Pre-installed | `sqlite3 --version` |
+| C++ Compiler | GCC 12+, Clang 15+, or MSVC 19.30+ (Visual Studio 2022) | **Windows:** Install [Visual Studio 2022](https://visualstudio.microsoft.com/) Community (free) with "Desktop development with C++" workload. **Arch Linux:** `sudo pacman -S base-devel` **Ubuntu/Debian:** `sudo apt install build-essential` | `g++ --version` or `cl` in VS Developer Command Prompt |
+| CMake | 3.20+ | **Windows:** `winget install Kitware.CMake` **Arch Linux:** `sudo pacman -S cmake` **Ubuntu/Debian:** `sudo apt install cmake` | `cmake --version` |
+| libsodium | Latest | **Windows:** `vcpkg install libsodium` or download from [download.libsodium.org](https://download.libsodium.org/libsodium/releases/) **Arch Linux:** `sudo pacman -S libsodium` **Ubuntu/Debian:** `sudo apt install libsodium-dev` | `pkg-config --modversion libsodium` (Linux) |
+| libcurl | Latest | **Windows:** Usually bundled with Visual Studio; or `vcpkg install curl` **Arch Linux:** `sudo pacman -S curl` **Ubuntu/Debian:** `sudo apt install libcurl4-openssl-dev` | `curl --version` |
+| SQLite3 | Latest | **Windows:** `vcpkg install sqlite3` **Arch Linux:** `sudo pacman -S sqlite` **Ubuntu/Debian:** `sudo apt install libsqlite3-dev` | `sqlite3 --version` |
 
 > **What is vcpkg?** It's a C++ package manager by Microsoft. Install it from
 > [github.com/microsoft/vcpkg](https://github.com/microsoft/vcpkg). It makes
@@ -294,7 +294,7 @@ Before setting up the project, you need these installed:
 
 | Tool | Minimum Version | How to Install | How to Check |
 |---|---|---|---|
-| Python | 3.11+ | **Windows:** `winget install Python.Python.3.11` or from [python.org](https://www.python.org/downloads/) **Linux:** `sudo apt install python3` **macOS:** `brew install python@3.11` | `python --version` |
+| Python | 3.11+ | **Windows:** `winget install Python.Python.3.11` or from [python.org](https://www.python.org/downloads/) **Arch Linux:** `sudo pacman -S python` **Ubuntu/Debian:** `sudo apt install python3` | `python --version` |
 | pip | Latest | Comes with Python | `pip --version` |
 
 Python libraries (PySide6, requests) are installed via pip in the setup steps below.

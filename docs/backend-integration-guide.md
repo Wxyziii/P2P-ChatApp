@@ -35,7 +35,7 @@ Our app has **three pieces**:
 
 ### How They Talk to Each Other
 
-`
+```
  ┌──────────────────────────────────────────────────────────────────────┐
  │  YOUR COMPUTER                                                      │
  │                                                                     │
@@ -70,14 +70,14 @@ Our app has **three pieces**:
           │  (direct P2P)   │        │  (discovery +     │
           │                 │        │   offline msgs)   │
           └─────────────────┘        └──────────────────┘
-`
+```
 
 ### Data Flow Summary
 
-`
+```
  User ──► React UI ──► Tauri ──► HTTP/WS ──► C++ Backend ──► TCP to peer
                                                          └──► Supabase
-`
+```
 
 ### The Golden Rules
 
@@ -115,7 +115,7 @@ export const WS_MAX_RECONNECT_ATTEMPTS = 10;                // Give up after 10 
 export const MESSAGE_PAGE_SIZE = 50;                        // Messages per page
 export const TYPING_DEBOUNCE_MS = 1000;                     // Typing indicator debounce
 export const TYPING_TIMEOUT_MS = 5000;                      // Auto-clear typing after 5s
-`
+
 
 ---
 
@@ -205,7 +205,7 @@ class ApiService {
 }
 
 export const api = new ApiService();
-`
+
 
 #### Endpoint-by-Endpoint Breakdown
 
@@ -214,7 +214,8 @@ export const api = new ApiService();
 | getStatus() | `api.getStatus()` | `GET /status` | `StatusResponse` JSON (username, uptime, peer count) |
 | listFriends() | `api.listFriends()` | `GET /friends` | `Contact[]` array with online status, keys, last_seen |
 | ddFriend(username) | `api.addFriend("bob")` | `POST /friends` with `{"username":"bob"}` | `Contact` object (201), or error 404 (not found) / 409 (already friends) |
-| emoveFriend(username) | `api.removeFriend("bob")` | `DELETE /friends/bob` | Empty (204), or error 404 |
+| 
+emoveFriend(username) | `api.removeFriend("bob")` | `DELETE /friends/bob` | Empty (204), or error 404 |
 | getMessages(peer, limit, offset) | `api.getMessages("bob", 50, 0)` | `GET /messages?peer=bob&limit=50&offset=0` | `MessagesResponse` with messages array, total count, has_more flag |
 | sendMessage(to, text) | `api.sendMessage("bob", "hi")` | `POST /messages` with `{"to":"bob","text":"hi"}` | `{msg_id, delivered, delivery_method}` |
 | deleteMessage(id) | `api.deleteMessage("abc-123")` | `DELETE /messages/abc-123` | Empty (204) |
@@ -311,7 +312,7 @@ class WebSocketService {
 }
 
 export const websocket = new WebSocketService();
-`
+
 
 #### What the WebSocket Receives (Backend → Frontend)
 
@@ -393,7 +394,7 @@ export function useWebSocket() {
     return () => { unsub(); clearInterval(interval); websocket.disconnect(); };
   }, [/* deps */]);
 }
-`
+
 
 **What happens for each event:**
 
@@ -450,7 +451,7 @@ export function useMessages(peer: string | null) {
 
   return { messages, hasMore, loading, sending, send, loadOlder, isTyping };
 }
-`
+
 
 **Backend calls triggered by this hook:**
 
@@ -503,7 +504,7 @@ export function useContacts() {
 
   return { contacts: sorted, loading, error, searchQuery, setSearchQuery };
 }
-`
+
 
 **Backend calls:**
 
@@ -603,7 +604,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }
   },
 }));
-`
+
 
 **Backend calls from this store:**
 
@@ -696,7 +697,7 @@ export const useContactStore = create<ContactState>((set, get) => ({
     ),
   })),
 }));
-`
+
 
 **Backend calls from this store:**
 
@@ -746,7 +747,7 @@ export default function App() {
 
   return <AppShell />;
 }
-`
+
 
 **Backend calls from App.tsx:**
 
@@ -760,7 +761,7 @@ export default function App() {
 
 Here's the full picture of which files call which endpoints:
 
-`
+```
 Frontend File                    Backend Endpoint
 ─────────────────────────────    ─────────────────────────────
 src/App.tsx                  ──► GET  /status  (every 6s)
@@ -779,7 +780,7 @@ src/stores/chatStore.ts      ──► GET  /messages?peer=X  (via api.getMessag
 src/stores/contactStore.ts   ──► GET    /friends         (via api.listFriends)
                              ──► POST   /friends         (via api.addFriend)
                              ──► DELETE /friends/:user   (via api.removeFriend)
-`
+```
 
 ---
 
@@ -790,7 +791,7 @@ The C++ backend currently has the REST API structure (`local_api.cpp`), but the
 
 ### 3.1 What Already Exists
 
-`
+
 backend/
 ├── src/api/local_api.cpp      ← REST API on :8080 (endpoints are TODO stubs)
 ├── include/api/local_api.h    ← Header for REST API
@@ -799,7 +800,7 @@ backend/
 ├── src/crypto/                ← libsodium encryption
 ├── src/supabase/              ← Supabase REST client
 └── config.example.json        ← Configuration template
-`
+
 
 ### 3.2 What You Need to Create: WebSocket Event Server
 
@@ -811,7 +812,7 @@ The WebSocket server runs on port **8081** and has one path: `/events`.
 
 #### Header File
 
-`cpp
+```cpp
 // backend/include/network/ws_event_server.h
 #pragma once
 
@@ -880,11 +881,11 @@ private:
     std::mutex sessions_mutex_;
     ClientEventHandler on_client_event_;
 };
-`
+```
 
 #### Implementation File
 
-`cpp
+```cpp
 // backend/src/network/ws_event_server.cpp
 
 #include "network/ws_event_server.h"
@@ -1032,11 +1033,11 @@ void WSEventServer::push_typing(const std::string& username, bool typing) {
 void WSEventServer::set_on_client_event(ClientEventHandler handler) {
     on_client_event_ = std::move(handler);
 }
-`
+```
 
 #### Wire It Into `main.cpp`
 
-`cpp
+```cpp
 // In backend/src/main.cpp — add these lines:
 
 #include "network/ws_event_server.h"
@@ -1089,11 +1090,11 @@ int main() {
 
     io_context.run();
 }
-`
+```
 
 #### Add to `CMakeLists.txt`
 
-`cmake
+```cmake
 # Add the new source file to your existing target:
 target_sources(secure-p2p-chat PRIVATE
     src/network/ws_event_server.cpp
@@ -1103,7 +1104,7 @@ target_sources(secure-p2p-chat PRIVATE
 # Make sure Boost.Beast is linked (it's header-only, but needs Boost):
 find_package(Boost REQUIRED COMPONENTS system)
 target_link_libraries(secure-p2p-chat PRIVATE Boost::system)
-`
+```
 
 ---
 
@@ -1113,7 +1114,7 @@ target_link_libraries(secure-p2p-chat PRIVATE Boost::system)
 
 **Scenario:** Alice types "Hey Bob!" and presses Enter.
 
-`
+```
 Step 1: USER TYPES AND PRESSES ENTER
   ┌─────────────────────────────────────────────────┐
   │  ComposeArea.tsx                                 │
@@ -1171,11 +1172,11 @@ Step 7: FRONTEND SHOWS IT
   │  - 🕐 clock if delivered=false                   │
   │  - "direct" or "offline" delivery label          │
   └─────────────────────────────────────────────────┘
-`
+```
 
 **What the backend MUST return:**
 
-`json
+```json
 // Success — message delivered directly to online peer
 {
   "msg_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
@@ -1195,7 +1196,7 @@ Step 7: FRONTEND SHOWS IT
 {
   "error": "User 'bob' not found in friends list"
 }
-`
+```
 
 ---
 
@@ -1203,7 +1204,7 @@ Step 7: FRONTEND SHOWS IT
 
 **Scenario:** Bob sends Alice a message. Alice's app is open.
 
-`
+```
 Step 1: BOB'S BACKEND SENDS TCP
   ┌─────────────────────────────────────────────────┐
   │  Bob's C++ backend sends encrypted message       │
@@ -1255,7 +1256,7 @@ Step 5: UI UPDATES
   │  - If bob's chat isn't open: unread badge +1     │
   │  - Desktop notification (if enabled)             │
   └─────────────────────────────────────────────────┘
-`
+```
 
 ---
 
@@ -1263,7 +1264,7 @@ Step 5: UI UPDATES
 
 **Scenario:** Bob starts his app. Alice sees him come online.
 
-`
+```
 Step 1: BOB STARTS HIS APP
   ┌─────────────────────────────────────────────────┐
   │  Bob's backend starts up                         │
@@ -1296,7 +1297,7 @@ Step 4: FRONTEND UPDATES
   │                                                  │
   │  UI: Green dot appears next to Bob's name        │
   └─────────────────────────────────────────────────┘
-`
+```
 
 ---
 
@@ -1304,7 +1305,7 @@ Step 4: FRONTEND UPDATES
 
 **Scenario:** Alice wants to add Bob as a friend. She only knows his username.
 
-`
+```
 Step 1: ALICE OPENS ADD FRIEND DIALOG
   ┌─────────────────────────────────────────────────┐
   │  AddFriendDialog.tsx                             │
@@ -1360,6 +1361,656 @@ Step 4: FRONTEND UPDATES
   │  - Sets store.error = "User not found"         │
   │  - Dialog shows red error message              │
   └────────────────────────────────────────────────┘
-`
+```
 
 ---
+
+## 5. Error Handling
+
+### 5.1 What Errors Each Endpoint Can Return
+
+#### `GET /status`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 200 | `{status, username, ...}` | Backend is running | `uiStore.backendConnected = true` |
+| (connection refused) | — | Backend isn't running | `uiStore.backendConnected = false`, red indicator |
+
+#### `GET /friends`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 200 | `[{username, online, ...}, ...]` | Normal operation | Populate contact list |
+| 500 | `{"error": "Database error"}` | SQLite failure | Show "Failed to load contacts" |
+| (connection refused) | — | Backend down | Show "Backend offline" banner |
+
+#### `POST /friends`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 201 | `{username, public_key, ...}` | Friend added successfully | Add to list, close dialog |
+| 400 | `{"error": "Username is required"}` | Empty username | Show validation error |
+| 404 | `{"error": "User 'xyz' not found"}` | Username not in Supabase | Show "User not found" in dialog |
+| 409 | `{"error": "Already friends with 'bob'"}` | Already in friend list | Show "Already friends" in dialog |
+| 500 | `{"error": "Supabase lookup failed"}` | Supabase API error | Show "Service error, try later" |
+
+#### `DELETE /friends/:username`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 204 | (empty) | Friend removed | Remove from contact list |
+| 404 | `{"error": "Friend 'xyz' not found"}` | Not in friend list | Show error toast |
+
+#### `GET /messages?peer=X&limit=50&offset=0`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 200 | `{messages: [...], total, has_more}` | Normal | Display messages |
+| 400 | `{"error": "Missing 'peer' parameter"}` | Bad request | Console error (bug) |
+| 404 | `{"error": "Peer 'xyz' not in friends"}` | Unknown peer | Show empty chat |
+
+#### `POST /messages`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 200 | `{msg_id, delivered: true, delivery_method: "direct"}` | Delivered live | Show ✓ checkmark |
+| 200 | `{msg_id, delivered: false, delivery_method: "offline"}` | Stored for later | Show 🕐 pending icon |
+| 400 | `{"error": "Message text is required"}` | Empty text | Validation prevents this |
+| 404 | `{"error": "Recipient 'xyz' not in friends"}` | Not a friend | Show error toast |
+| 500 | `{"error": "Failed to send message"}` | Network/crypto error | Show "Send failed" + retry button |
+
+#### `DELETE /messages/:id`
+
+| HTTP Status | Error Body | When | Frontend Behavior |
+|-------------|-----------|------|-------------------|
+| 204 | (empty) | Message deleted | Remove from chat UI |
+| 404 | `{"error": "Message not found"}` | Invalid ID | Console error |
+
+### 5.2 How the Frontend Handles Errors
+
+**The error flow in the frontend follows this pattern:**
+
+
+1. api.ts makes HTTP request
+2. If response is not OK (status >= 400):
+   → Parses the JSON error body
+   → Throws: new Error(err.error || "HTTP <status>")
+3. The store catches the error:
+   → Sets store.error = error.message
+   → Re-throws if the caller needs to know
+4. The component reads store.error:
+   → Shows a red error message / toast
+
+// Example from api.ts:
+private async request<T>(path: string, options?: RequestInit): Promise<T> {
+  const res = await fetch(${this.baseUrl}, { ... });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(err.error || HTTP );  // ← This is what stores catch
+  }
+  return res.json();
+}
+
+
+### 5.3 What Happens When the Backend is Offline
+
+
+BACKEND GOES DOWN
+       │
+       ├─► REST calls fail (fetch throws TypeError: Failed to fetch)
+       │   └─► api.ts throws → stores set error state
+       │       └─► App.tsx health check fails
+       │           └─► uiStore.backendConnected = false
+       │               └─► TitleBar shows RED "Offline" indicator
+       │
+       └─► WebSocket disconnects (onclose fires)
+           └─► websocket.ts starts reconnecting
+               └─► Attempt 1: wait 3s    (3000 * 1.5^0)
+               └─► Attempt 2: wait 4.5s  (3000 * 1.5^1)
+               └─► Attempt 3: wait 6.75s (3000 * 1.5^2)
+               └─► ...
+               └─► Attempt 10: give up
+                   └─► uiStore.wsConnected = false
+                       └─► TitleBar shows "Reconnecting..." in yellow
+
+BACKEND COMES BACK
+       │
+       ├─► WebSocket reconnects automatically
+       │   └─► uiStore.wsConnected = true
+       │
+       ├─► Next health check succeeds (within 6 seconds)
+       │   └─► uiStore.backendConnected = true
+       │       └─► TitleBar shows GREEN "Online" indicator
+       │
+       └─► Next contacts poll fetches fresh data
+           └─► Any missed online/offline changes are caught
+
+
+---
+
+## 6. Testing the Connection
+
+### 6.1 Prerequisites
+
+`ash
+# You'll need curl (comes with Windows 10+, macOS, Linux)
+curl --version
+
+# For WebSocket testing, install wscat:
+npm install -g wscat
+
+
+### 6.2 Test REST Endpoints with curl
+
+**Start your backend first**, then open a second terminal:
+
+#### Test 1: Health Check
+
+`ash
+curl -s http://127.0.0.1:8080/status | python -m json.tool
+
+
+Expected response:
+```json
+{
+  "status": "online",
+  "username": "alice",
+  "node_id": "a1b2c3d4e5f6...",
+  "uptime_seconds": 42,
+  "friends_count": 2,
+  "peer_port": 9100,
+  "supabase_connected": true,
+  "version": "0.1.0"
+}
+```
+
+#### Test 2: List Friends
+
+`ash
+curl -s http://127.0.0.1:8080/friends | python -m json.tool
+
+
+Expected response:
+```json
+[
+  {
+    "username": "bob",
+    "public_key": "base64-encoded-X25519-key...",
+    "signing_key": "base64-encoded-Ed25519-key...",
+    "online": true,
+    "last_seen": "2025-06-15T10:30:00Z",
+    "last_ip": "192.168.1.42",
+    "added_at": "2025-06-10T08:00:00Z"
+  }
+]
+```
+
+#### Test 3: Add a Friend
+
+`ash
+curl -s -X POST http://127.0.0.1:8080/friends \
+  -H "Content-Type: application/json" \
+  -d '{"username": "bob"}' | python -m json.tool
+
+
+Expected response (201 Created):
+```json
+{
+  "username": "bob",
+  "public_key": "base64-encoded-key...",
+  "signing_key": "base64-encoded-key...",
+  "online": false,
+  "last_seen": "2025-06-15T10:30:00Z",
+  "last_ip": "192.168.1.42",
+  "added_at": "2025-06-15T11:00:00Z"
+}
+```
+
+Test error cases:
+`ash
+# User not found (404):
+curl -s -X POST http://127.0.0.1:8080/friends \
+  -H "Content-Type: application/json" \
+  -d '{"username": "nonexistent_user"}'
+# Response: {"error": "User 'nonexistent_user' not found"}
+
+# Already friends (409):
+curl -s -X POST http://127.0.0.1:8080/friends \
+  -H "Content-Type: application/json" \
+  -d '{"username": "bob"}'
+# Response: {"error": "Already friends with 'bob'"}
+
+
+#### Test 4: Remove a Friend
+
+`ash
+curl -s -X DELETE http://127.0.0.1:8080/friends/bob -w "\nHTTP Status: %{http_code}\n"
+
+
+Expected: empty body, HTTP Status 204.
+
+#### Test 5: Get Messages (Chat History)
+
+`ash
+# Get the 50 most recent messages with bob:
+curl -s "http://127.0.0.1:8080/messages?peer=bob&limit=50&offset=0" | python -m json.tool
+
+
+Expected response:
+```json
+{
+  "messages": [
+    {
+      "msg_id": "a1b2c3d4-...",
+      "from": "alice",
+      "to": "bob",
+      "text": "Hey, how's the project going?",
+      "timestamp": "2025-06-15T10:25:00Z",
+      "direction": "sent",
+      "delivered": true,
+      "delivery_method": "direct"
+    },
+    {
+      "msg_id": "e5f6g7h8-...",
+      "from": "bob",
+      "to": "alice",
+      "text": "Great! Just pushed my changes.",
+      "timestamp": "2025-06-15T10:26:00Z",
+      "direction": "received",
+      "delivered": true,
+      "delivery_method": "direct"
+    }
+  ],
+  "total": 127,
+  "has_more": true
+}
+```
+
+`ash
+# Get the NEXT page (offset=50):
+curl -s "http://127.0.0.1:8080/messages?peer=bob&limit=50&offset=50" | python -m json.tool
+
+
+#### Test 6: Send a Message
+
+`ash
+curl -s -X POST http://127.0.0.1:8080/messages \
+  -H "Content-Type: application/json" \
+  -d '{"to": "bob", "text": "Hello from curl!"}' | python -m json.tool
+
+
+Expected response:
+```json
+{
+  "msg_id": "f9e8d7c6-...",
+  "delivered": true,
+  "delivery_method": "direct"
+}
+```
+
+#### Test 7: Delete a Message
+
+`ash
+curl -s -X DELETE http://127.0.0.1:8080/messages/a1b2c3d4 -w "\nHTTP Status: %{http_code}\n"
+
+
+Expected: empty body, HTTP Status 204.
+
+### 6.3 Test WebSocket with wscat
+
+`ash
+# Connect to the WebSocket:
+wscat -c ws://127.0.0.1:8081/events
+
+
+Once connected, you should see events printed when things happen:
+
+`ash
+# When a message arrives from a peer:
+< {"event":"new_message","data":{"msg_id":"abc-123","from":"bob","to":"alice","text":"Hi!","timestamp":"2025-06-15T10:31:00Z","direction":"received","delivered":true,"delivery_method":"direct"}}
+
+# When a friend comes online:
+< {"event":"friend_online","data":{"username":"bob"}}
+
+# When a friend goes offline:
+< {"event":"friend_offline","data":{"username":"bob"}}
+
+# When a friend is typing:
+< {"event":"typing","data":{"username":"bob","typing":true}}
+
+
+Send events to the backend:
+
+`ash
+# Tell the backend you're typing to bob:
+> {"event":"typing","data":{"to":"bob","typing":true}}
+
+# Tell the backend you've read bob's messages:
+> {"event":"mark_read","data":{"peer":"bob","msg_id":"abc-123"}}
+
+
+### 6.4 Test Frontend + Backend Together
+
+`ash
+# Terminal 1: Start the C++ backend
+cd backend/build
+./secure-p2p-chat config.json
+
+# Terminal 2: Start the Tauri dev server
+cd ui-tauri
+npm run tauri dev
+
+# Terminal 3: Watch WebSocket events
+wscat -c ws://127.0.0.1:8081/events
+
+
+**What to check in the browser dev tools (Ctrl+Shift+I):**
+
+1. **Console tab:** Look for `[WS] Connected` log message
+2. **Network tab → Fetch/XHR:** You should see `GET /status` requests every 6 seconds
+3. **Network tab → WS:** You should see the WebSocket connection to `:8081/events`
+4. **No CORS errors** — if you see them, your backend needs CORS headers (see Section 9)
+
+### 6.5 Two-Node Test (Full P2P)
+
+`ash
+# Node A — Alice:
+cd backend/build
+./secure-p2p-chat config-alice.json
+# config-alice.json: username=alice, listen_port=9100, api_port=8080
+
+# Node B — Bob (on same machine, different ports):
+./secure-p2p-chat config-bob.json
+# config-bob.json: username=bob, listen_port=9101, api_port=8082
+
+# Alice's frontend: ui-tauri with API_BASE_URL=http://127.0.0.1:8080
+# Bob's frontend: ui-tauri with API_BASE_URL=http://127.0.0.1:8082
+
+# Steps:
+# 1. Alice adds bob as friend → POST /friends {"username":"bob"}
+# 2. Bob adds alice as friend → POST /friends {"username":"alice"}
+# 3. Alice sends message → POST /messages {"to":"bob","text":"Hi Bob!"}
+# 4. Bob's wscat shows: {"event":"new_message","data":{...}}
+# 5. Bob's frontend shows the message in the chat!
+```
+
+---
+
+## 7. Data Types & JSON Contracts
+
+> These are the EXACT TypeScript types used in the frontend. The backend MUST return
+> JSON that matches these shapes, or the frontend will crash/misbehave.
+
+### 7.1 StatusResponse
+
+```typescript
+// ui-tauri/src/types/api.ts
+export interface StatusResponse {
+  status: string;              // "online" | "starting" | "error"
+  username: string;            // This node's username
+  node_id: string;             // Unique node identifier
+  uptime_seconds: number;      // Seconds since backend started
+  friends_count: number;       // Number of friends in the list
+  peer_port: number;           // P2P listening port (e.g., 9100)
+  supabase_connected: boolean; // true if Supabase is reachable
+  version: string;             // App version (e.g., "0.1.0")
+}
+```
+
+C++ backend must return:
+```json
+{
+  "status": "online",
+  "username": "alice",
+  "node_id": "a1b2c3d4e5f6",
+  "uptime_seconds": 3600,
+  "friends_count": 2,
+  "peer_port": 9100,
+  "supabase_connected": true,
+  "version": "0.1.0"
+}
+```
+
+### 7.2 Contact
+
+```typescript
+// ui-tauri/src/types/contact.ts
+export interface Contact {
+  username: string;      // Unique username (e.g., "bob")
+  public_key: string;    // Base64-encoded X25519 public key
+  signing_key: string;   // Base64-encoded Ed25519 public key
+  online: boolean;       // true if heartbeat is recent
+  last_seen: string;     // ISO 8601 timestamp
+  last_ip: string;       // Last known IP address
+  added_at: string;      // When friendship was created (ISO 8601)
+}
+
+export interface ContactWithPreview extends Contact {
+  lastMessage?: string;      // Frontend-only: sidebar preview
+  lastMessageTime?: string;  // Frontend-only: last message time
+  unreadCount: number;       // Frontend-only: unread count
+}
+```
+
+C++ `GET /friends` must return:
+```json
+[
+  {
+    "username": "bob",
+    "public_key": "xK9m3...",
+    "signing_key": "eD2n4...",
+    "online": true,
+    "last_seen": "2025-06-15T10:30:00Z",
+    "last_ip": "192.168.1.42",
+    "added_at": "2025-06-10T08:00:00Z"
+  }
+]
+```
+
+### 7.3 Message
+
+```typescript
+// ui-tauri/src/types/message.ts
+export interface Message {
+  msg_id: string;                        // UUID — NOT "id"!
+  from: string;                          // Sender username
+  to: string;                            // Recipient username
+  text: string;                          // Plaintext content
+  timestamp: string;                     // ISO 8601
+  direction: "sent" | "received";        // From this user's perspective
+  delivered: boolean;                    // true if confirmed delivered
+  delivery_method: "direct" | "offline"; // How it was delivered
+  reactions?: Reaction[];                // Optional, future feature
+}
+```
+
+### 7.4 MessagesResponse
+
+```typescript
+// ui-tauri/src/types/api.ts
+export interface MessagesResponse {
+  messages: Message[];  // Array of messages for this page
+  total: number;        // Total message count for this peer
+  has_more: boolean;    // true if older messages exist
+}
+```
+
+### 7.5 WebSocket Events
+
+```typescript
+// ui-tauri/src/types/events.ts
+
+// Backend → Frontend:
+export type WSEvent =
+  | { event: "new_message"; data: Message }
+  | { event: "friend_online"; data: { username: string } }
+  | { event: "friend_offline"; data: { username: string } }
+  | { event: "typing"; data: { username: string; typing: boolean } };
+
+// Frontend → Backend:
+export type WSClientEvent =
+  | { event: "typing"; data: { to: string; typing: boolean } }
+  | { event: "mark_read"; data: { peer: string; msg_id: string } };
+```
+
+### 7.6 Error Response
+
+```typescript
+export interface ApiError {
+  error: string;  // Human-readable error message
+}
+```
+
+---
+
+## 8. Integration Checklist by Phase
+
+### Phase 1: Plaintext P2P Chat
+
+- [ ] Implement HTTP server in `local_api.cpp`
+- [ ] `GET /status` returns node info JSON
+- [ ] `GET /friends` returns friends from SQLite
+- [ ] `POST /friends` adds friend to SQLite
+- [ ] `DELETE /friends/:username` removes friend
+- [ ] `GET /messages?peer=X` returns paginated history
+- [ ] `POST /messages` sends plaintext via TCP
+- [ ] `DELETE /messages/:id` deletes from SQLite
+- [ ] P2P TCP listener in `peer_server.cpp`
+- [ ] P2P TCP sender in `peer_client.cpp`
+- [ ] Create `ws_event_server.cpp` for real-time events
+- [ ] Verify frontend `api.ts` matches backend JSON shapes
+- [ ] Test send/receive messages end-to-end
+
+### Phase 2: Supabase Discovery
+
+- [ ] `register_user()` on startup
+- [ ] `lookup_user(username)` for `POST /friends`
+- [ ] `heartbeat()` every 30s
+- [ ] `friend_online` / `friend_offline` WS events
+
+### Phase 3: Encryption
+
+- [ ] Generate X25519 + Ed25519 key pairs
+- [ ] Encrypt outgoing with `crypto_box_easy()`
+- [ ] Sign outgoing with `crypto_sign_detached()`
+- [ ] Decrypt + verify incoming
+- [ ] **Frontend: No changes needed!**
+
+### Phase 4: Offline Messages
+
+- [ ] `push_offline_message()` to Supabase when peer offline
+- [ ] `fetch_offline_messages()` on startup
+- [ ] Respond with `delivery_method: "offline"`
+
+### Phase 5: Polish
+
+- [ ] Desktop notifications
+- [ ] Read receipts (`mark_read` WS event)
+- [ ] End-to-end typing indicators
+- [ ] Conversation search
+
+---
+
+## 9. Common Pitfalls & Tips
+
+### CORS on Localhost
+
+Even on localhost, different ports = cross-origin. Add to every HTTP response:
+
+```cpp
+std::string cors_headers =
+    "Access-Control-Allow-Origin: *\r\n"
+    "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS\r\n"
+    "Access-Control-Allow-Headers: Content-Type\r\n";
+
+if (method == "OPTIONS") {
+    send_response(socket, 204, "", cors_headers);
+    return;
+}
+```
+
+### Content-Type Header
+
+Always set `Content-Type: application/json` or `res.json()` fails in the frontend.
+
+### Message ID is `msg_id` not `id`
+
+The frontend expects `msg_id`. If you use `id`, messages won't deduplicate properly.
+
+### Timestamps Must Be ISO 8601 UTC
+
+```
+2025-06-15T10:30:00Z     <- CORRECT
+2025-06-15 10:30:00      <- WRONG (no timezone)
+```
+
+### Port Conflicts
+
+Change in BOTH places: `backend/config.json` AND `ui-tauri/src/lib/constants.ts`.
+
+### Debug with Dev Tools
+
+`Ctrl+Shift+I` in Tauri → Network tab → Fetch/XHR for REST, WS for WebSocket.
+
+### Mock the Backend Early
+
+Test the frontend before the C++ backend is ready:
+
+```javascript
+// Browser console — simulate receiving a message:
+useChatStore.getState().addMessage({
+  msg_id: "test-1", from: "bob", to: "alice",
+  text: "Test!", timestamp: new Date().toISOString(),
+  direction: "received", delivered: true, delivery_method: "direct"
+});
+```
+
+---
+
+## 10. Quick Reference Card
+
+```
++------------------------------------------------------------------+
+|                     QUICK REFERENCE                              |
++------------------------------------------------------------------+
+|                                                                  |
+|  REST API:   http://127.0.0.1:8080                               |
+|  WebSocket:  ws://127.0.0.1:8081/events                          |
+|  P2P TCP:    tcp://0.0.0.0:9100                                  |
+|                                                                  |
+|  --- REST ENDPOINTS ---                                          |
+|  GET    /status              -> health check + node info         |
+|  GET    /friends             -> list all friends                 |
+|  POST   /friends             -> add friend {"username":"..."}    |
+|  DELETE /friends/:username   -> remove friend                    |
+|  GET    /messages?peer=X     -> paginated chat history           |
+|  POST   /messages            -> send {"to":"...","text":"..."}   |
+|  DELETE /messages/:msg_id    -> delete single message            |
+|                                                                  |
+|  --- WS EVENTS (backend -> frontend) ---                         |
+|  new_message     -> incoming chat message                        |
+|  friend_online   -> friend came online                           |
+|  friend_offline  -> friend went offline                          |
+|  typing          -> friend is typing                             |
+|                                                                  |
+|  --- WS EVENTS (frontend -> backend) ---                         |
+|  typing          -> tell backend you're typing                   |
+|  mark_read       -> mark messages as read                        |
+|                                                                  |
+|  --- KEY FILES ---                                               |
+|  Config:     backend/config.json                                 |
+|  Constants:  ui-tauri/src/lib/constants.ts                       |
+|  REST API:   ui-tauri/src/services/api.ts                        |
+|  WebSocket:  ui-tauri/src/services/websocket.ts                  |
+|  WS Hook:    ui-tauri/src/hooks/useWebSocket.ts                  |
+|  Chat Store: ui-tauri/src/stores/chatStore.ts                    |
+|  Contacts:   ui-tauri/src/stores/contactStore.ts                 |
+|                                                                  |
+|  --- POLLING INTERVALS ---                                       |
+|  Health check:   every 6s   (POLL_INTERVAL_MS * 3)               |
+|  Contacts:       every 10s  (POLL_INTERVAL_MS * 5)               |
+|  WS reconnect:   3s -> 4.5s -> 6.75s (exponential backoff)      |
+|  Typing timeout:  5s  (auto-clears)                              |
+|                                                                  |
++------------------------------------------------------------------+
+```
